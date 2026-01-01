@@ -47,32 +47,57 @@ CREATE TABLE bronze.crm_sales_details(
 GO
 
 
+<<<<<<< HEAD
 DROP TABLE IF EXISTS bronze.erp_cust_az12;
 GO
 
 CREATE TABLE bronze.erp_cust_az12(
+=======
+DROP TABLE IF EXISTS bronze.erp_CUST_AZ12;
+GO
+
+CREATE TABLE bronze.erp_CUST_AZ12(
+>>>>>>> 67e1270babe3b7628f4a334255ba6a9e66161c83
 	CID NVARCHAR (50),
 	BDATE DATE,
 	GEN NVARCHAR (50)
 );
 GO
 
+<<<<<<< HEAD
 DROP TABLE IF EXISTS bronze.erp_loc_a101;
 GO
 
 CREATE TABLE bronze.erp_loc_a101(
+=======
+DROP TABLE IF EXISTS bronze.erp_LOC_A101;
+GO
+
+CREATE TABLE bronze.erp_LOC_A101(
+>>>>>>> 67e1270babe3b7628f4a334255ba6a9e66161c83
 	CID NVARCHAR (50),
 	CNTRY NVARCHAR (50)
 );
 GO
 
+<<<<<<< HEAD
 DROP TABLE IF EXISTS bronze.erp_px_cat_g1v2;
 GO
 
 CREATE TABLE bronze.erp_px_cat_g1v2(
+=======
+DROP TABLE IF EXISTS bronze.erp_PX_CAT_G1V2;
+GO
+
+CREATE TABLE bronze.erp_PX_CAT_G1V2(
+>>>>>>> 67e1270babe3b7628f4a334255ba6a9e66161c83
 	ID NVARCHAR (50),
 	CAT NVARCHAR (50),
 	SUBCAT NVARCHAR (50),
 	MAINTENANCE NVARCHAR (50)
 );
+<<<<<<< HEAD
 GO
+=======
+GO
+>>>>>>> 67e1270babe3b7628f4a334255ba6a9e66161c83
