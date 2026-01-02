@@ -1,3 +1,23 @@
+/*
+===============================================================================
+Stored Procedure: Load Silver Layer (Bronze -> Silver)
+===============================================================================
+Script Purpose:
+    This stored procedure performs the ETL (Extract, Transform, Load) process to 
+    populate the 'silver' schema tables from the 'bronze' schema.
+	Actions Performed:
+		- Truncates Silver tables.
+		- Inserts transformed and cleansed data from Bronze into Silver tables.
+		
+Parameters:
+    None. 
+	  This stored procedure does not accept any parameters or return any values.
+
+Usage Example:
+    EXEC Silver.load_silver;
+===============================================================================
+*/
+
 CREATE OR ALTER PROCEDURE silver.load_silver AS
 BEGIN
 	DECLARE @start_time DATETIME, @end_time DATETIME, @batch_start_time DATETIME, @batch_end_time DATETIME
@@ -26,21 +46,21 @@ BEGIN
 		cst_create_date
 		)
 		SELECT 
-		cst_id,
-		cst_key,
-		TRIM (cst_firstname) AS cst_firstname,
-		TRIM (cst_lastname) AS cst_lastname,
-		CASE UPPER (TRIM (cst_marital_status)) 
-			WHEN 'S' THEN 'Single'
-			WHEN 'M'  THEN 'Married'
-			ELSE 'NA'
-		END	AS cst_marital_status,
-		CASE UPPER (TRIM (cst_gndr)) 
-			WHEN 'F' THEN 'Female'
-			WHEN 'M'  THEN 'Male'
-			ELSE 'NA'
-		END AS cst_gndr,
-		cst_create_date
+			cst_id,
+			cst_key,
+			TRIM (cst_firstname) AS cst_firstname,
+			TRIM (cst_lastname) AS cst_lastname,
+			CASE UPPER (TRIM (cst_marital_status)) 
+				WHEN 'S' THEN 'Single'
+				WHEN 'M'  THEN 'Married'
+				ELSE 'NA'
+			END	AS cst_marital_status,
+			CASE UPPER (TRIM (cst_gndr)) 
+				WHEN 'F' THEN 'Female'
+				WHEN 'M'  THEN 'Male'
+				ELSE 'Others'
+			END AS cst_gndr,
+			cst_create_date
 		FROM (
 		SELECT *,
 		ROW_NUMBER() OVER (PARTITION BY cst_id ORDER BY cst_create_date DESC) AS flag_last
@@ -69,20 +89,20 @@ BEGIN
 		prd_end_dt
 		)
 		SELECT
-		prd_id,
-		REPLACE (SUBSTRING(prd_key, 1, 5),'-', '_') AS cat_id,
-		SUBSTRING (prd_key, 7, LEN(prd_key)) AS prd_key,
-		prd_nm,
-		ISNULL (prd_cost, 0) AS prd_cost,
-		CASE UPPER (TRIM (prd_line))
-			WHEN 'R' THEN 'Road'
-			WHEN 'M' THEN 'Mountain'
-			WHEN 'S' THEN 'Other Sales'
-			WHEN 'T' THEN 'Touring'
-			ELSE 'NA'
-		END AS prd_line,
-		CAST (prd_start_dt AS DATE) AS prd_start_dt,
-		CAST (DATEADD (DAY, -1, LEAD(prd_start_dt) OVER (PARTITION BY prd_key ORDER BY prd_start_dt)) AS DATE) AS prd_end_dt
+			prd_id,
+			REPLACE (SUBSTRING(prd_key, 1, 5),'-', '_') AS cat_id,
+			SUBSTRING (prd_key, 7, LEN(prd_key)) AS prd_key,
+			prd_nm,
+			ISNULL (prd_cost, 0) AS prd_cost,
+			CASE UPPER (TRIM (prd_line))
+				WHEN 'R' THEN 'Road'
+				WHEN 'M' THEN 'Mountain'
+				WHEN 'S' THEN 'Other Sales'
+				WHEN 'T' THEN 'Touring'
+				ELSE 'NA'
+			END AS prd_line,
+			CAST (prd_start_dt AS DATE) AS prd_start_dt,
+			CAST (DATEADD (DAY, -1, LEAD(prd_start_dt) OVER (PARTITION BY prd_key ORDER BY prd_start_dt)) AS DATE) AS prd_end_dt
 		FROM
 		bronze.crm_prd_info
 		SET @end_time = GETDATE();
@@ -108,34 +128,61 @@ BEGIN
 		sls_price
 		)
 		SELECT
-		sls_ord_num,
-		sls_prd_key,
-		sls_cust_id,
-		CASE WHEN sls_order_dt = 0 OR LEN (sls_order_dt)!=8 THEN NULL
-			ELSE CAST(CAST(sls_order_dt AS VARCHAR) AS DATE)
-		END AS sls_order_dt,
-		CASE WHEN sls_ship_dt = 0 OR LEN (sls_ship_dt)!=8 THEN NULL
-			ELSE CAST(CAST(sls_ship_dt AS VARCHAR) AS DATE)
-		END AS sls_ship_dt,
-		CASE WHEN sls_due_dt = 0 OR LEN (sls_due_dt)!=8 THEN NULL
-			ELSE CAST(CAST(sls_due_dt AS VARCHAR) AS DATE)
-		END AS sls_due_dt,
-		CASE WHEN sls_sales <= 0 OR sls_sales IS NULL OR sls_sales != ABS (sls_quantity) * ABS (sls_price)
-			THEN ABS(sls_quantity) * ABS(sls_price)
-			ELSE sls_sales
-		END AS sls_sales,
-		CASE WHEN sls_quantity < 0 OR sls_quantity IS NULL OR sls_quantity != ABS (sls_sales) / ABS (sls_price)
-			THEN ABS(sls_sales) / ABS(sls_price)
-			ELSE sls_quantity
-		END AS sls_quantity,
-		CASE WHEN sls_price < 0 OR sls_price IS NULL OR sls_price != ABS (sls_sales) / ABS (sls_quantity)
-			THEN ABS(sls_sales) / ABS(sls_quantity)
-			ELSE sls_price
-		END AS sls_price
+			sls_ord_num,
+			sls_prd_key,
+			sls_cust_id,
+			CASE WHEN sls_order_dt = 0 OR LEN (sls_order_dt)!=8 THEN NULL
+				ELSE CAST(CAST(sls_order_dt AS VARCHAR) AS DATE)
+			END AS sls_order_dt,
+			CASE WHEN sls_ship_dt = 0 OR LEN (sls_ship_dt)!=8 THEN NULL
+				ELSE CAST(CAST(sls_ship_dt AS VARCHAR) AS DATE)
+			END AS sls_ship_dt,
+			CASE WHEN sls_due_dt = 0 OR LEN (sls_due_dt)!=8 THEN NULL
+				ELSE CAST(CAST(sls_due_dt AS VARCHAR) AS DATE)
+			END AS sls_due_dt,
+			CASE WHEN sls_sales <= 0 OR sls_sales IS NULL OR sls_sales != ABS (sls_quantity) * ABS (sls_price)
+				THEN ABS(sls_quantity) * ABS(sls_price)
+				ELSE sls_sales
+			END AS sls_sales,
+			CASE WHEN sls_quantity < 0 OR sls_quantity IS NULL OR sls_quantity != ABS (sls_sales) / ABS (sls_price)
+				THEN ABS(sls_sales) / ABS(sls_price)
+				ELSE sls_quantity
+			END AS sls_quantity,
+			CASE WHEN sls_price < 0 OR sls_price IS NULL OR sls_price != ABS (sls_sales) / ABS (sls_quantity)
+				THEN ABS(sls_sales) / ABS(sls_quantity)
+				ELSE sls_price
+			END AS sls_price
 		FROM bronze.crm_sales_details
 
 		SET @end_time = GETDATE();
 		PRINT '>> Load Duration: '+CAST(DATEDIFF (SECOND, @start_time, @end_time) AS NVARCHAR) + ' seconds';
+		PRINT '------------';
+
+		SET @start_time = GETDATE();
+		PRINT '>> Truncating Table: silver.erp_cust_az12';
+		TRUNCATE TABLE silver.erp_cust_az12;
+
+		PRINT '>> Inserting Into Tble: silver.erp_cust_az12';
+		INSERT INTO silver.erp_cust_az12(
+		CID,
+		BDATE,
+		GEN
+		)
+		SELECT
+			CASE WHEN CID LIKE 'NAS%' THEN SUBSTRING (CID, 4, LEN(CID)) 
+				ELSE CID
+			END AS CID,
+			CASE WHEN BDATE >= GETDATE() THEN NULL
+				ELSE BDATE
+			END AS BDATE,
+			CASE WHEN UPPER (TRIM (GEN)) IN ('F', 'FEMALE') THEN 'Female'
+				WHEN UPPER (TRIM (GEN)) IN ('M', 'MALE') THEN 'Male'
+				ELSE 'Others'
+			END AS GEN
+		FROM bronze.erp_cust_az12
+
+		SET @end_time = GETDATE();
+		PRINT '>> Load Duration: ' +CAST(DATEDIFF(SECOND, @start_time, @end_time) AS NVARCHAR) + ' seconds';
 		PRINT '------------';
 
 		SET @batch_end_time = GETDATE();

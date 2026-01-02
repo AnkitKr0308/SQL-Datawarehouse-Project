@@ -1,5 +1,20 @@
 /*
-This is a test script
+===============================================================================
+Quality Checks
+===============================================================================
+Script Purpose:
+    This script performs various quality checks for data consistency, accuracy, 
+    and standardization across the 'silver' layer. It includes checks for:
+    - Null or duplicate primary keys.
+    - Unwanted spaces in string fields.
+    - Data standardization and consistency.
+    - Invalid date ranges and orders.
+    - Data consistency between related fields.
+
+Usage Notes:
+    - Run these checks after data loading Silver Layer.
+    - Investigate and resolve any discrepancies found during the checks.
+===============================================================================
 */
 
 
@@ -92,3 +107,23 @@ FROM bronze.crm_sales_details
 WHERE sls_sales != sls_quantity * sls_price
 OR sls_sales IS NULL OR sls_quantity IS NULL OR sls_price IS NULL
 OR sls_sales <=0 OR sls_quantity <=0 OR sls_price <=0
+
+
+--Test script for table bronze.erp_cust_az12
+--Unwanted spaces
+SELECT CID 
+FROM bronze.erp_cust_az12
+WHERE CID != TRIM (CID)
+
+SELECT CID
+FROM bronze.erp_cust_az12
+WHERE CID NOT IN (SELECT cst_key FROM silver.crm_cust_info)
+
+--Check if BDATE is greater than current date
+SELECT BDATE
+FROM bronze.erp_cust_az12
+WHERE BDATE >= GETDATE()
+
+--Normalize Gender
+SELECT DISTINCT GEN
+FROM bronze.erp_cust_az12;
