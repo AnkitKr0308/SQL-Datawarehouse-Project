@@ -180,7 +180,7 @@ BEGIN
 			END AS BDATE,
 			CASE WHEN UPPER (TRIM (GEN)) IN ('F', 'FEMALE') THEN 'Female'
 				WHEN UPPER (TRIM (GEN)) IN ('M', 'MALE') THEN 'Male'
-				ELSE 'Others'
+				ELSE 'NA'
 			END AS gen
 		FROM bronze.erp_cust_az12
 
