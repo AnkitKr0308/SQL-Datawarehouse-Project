@@ -59,7 +59,7 @@ BEGIN
 			CASE UPPER (TRIM (cst_gndr)) 
 				WHEN 'F' THEN 'Female'
 				WHEN 'M'  THEN 'Male'
-				ELSE 'Others'
+				ELSE 'NA'
 			END AS cst_gndr,
 			cst_create_date
 		FROM (
