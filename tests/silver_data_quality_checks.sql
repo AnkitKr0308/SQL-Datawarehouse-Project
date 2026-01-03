@@ -127,3 +127,23 @@ WHERE BDATE >= GETDATE()
 --Normalize Gender
 SELECT DISTINCT GEN
 FROM bronze.erp_cust_az12;
+
+
+--Test scripts for table erp_loc_a101
+SELECT CID, COUNT (*)
+FROM bronze.erp_loc_a101
+GROUP BY CID 
+HAVING COUNT (*)>1
+OR CID IS NULL
+
+SELECT DISTINCT cntry
+FROM bronze.erp_loc_a101
+
+SELECT DISTINCT cat
+FROM bronze.erp_px_cat_g1v2
+
+SELECT DISTINCT subcat
+FROM bronze.erp_px_cat_g1v2
+
+SELECT DISTINCT MAINTENANCE
+FROM bronze.erp_px_cat_g1v2

@@ -1,6 +1,16 @@
 /*
-This script drops table if already exists and creates CRM and ERP tables under silver schema
+===============================================================================
+DDL Script: Create Silver Tables
+===============================================================================
+Script Purpose:
+    This script creates tables in the 'silver' schema, dropping existing tables 
+    if they already exist.
+	  Run this script to re-define the DDL structure of 'bronze' Tables
+===============================================================================
 */
+
+USE Datawarehouse;
+GO
 
 DROP TABLE IF EXISTS silver.crm_cust_info;
 GO
@@ -57,9 +67,9 @@ GO
 
 CREATE TABLE silver.erp_cust_az12(
 
-	CID NVARCHAR (50),
-	BDATE DATE,
-	GEN NVARCHAR (50),
+	cid NVARCHAR (50),
+	bdate DATE,
+	gen NVARCHAR (50),
 	dwh_create_date DATETIME2 DEFAULT GETDATE()
 );
 GO
@@ -71,8 +81,8 @@ GO
 
 CREATE TABLE silver.erp_loc_a101(
 
-	CID NVARCHAR (50),
-	CNTRY NVARCHAR (50),
+	cid NVARCHAR (50),
+	cntry NVARCHAR (50),
 	dwh_create_date DATETIME2 DEFAULT GETDATE()
 );
 GO
@@ -82,10 +92,10 @@ GO
 
 CREATE TABLE silver.erp_px_cat_g1v2(
 
-	ID NVARCHAR (50),
-	CAT NVARCHAR (50),
-	SUBCAT NVARCHAR (50),
-	MAINTENANCE NVARCHAR (50),
+	id NVARCHAR (50),
+	cat NVARCHAR (50),
+	subcat NVARCHAR (50),
+	maintenance NVARCHAR (50),
 	dwh_create_date DATETIME2 DEFAULT GETDATE()
 );
 

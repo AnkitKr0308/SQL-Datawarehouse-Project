@@ -36,14 +36,15 @@ BEGIN
 		TRUNCATE TABLE silver.crm_cust_info;
 
 		PRINT 'Inserting into Table: silver.crm_cust_info';
-		INSERT INTO silver.crm_cust_info (
-		cst_id,
-		cst_key,
-		cst_firstname,
-		cst_lastname,
-		cst_marital_status,
-		cst_gndr,
-		cst_create_date
+		INSERT INTO silver.crm_cust_info 
+		(
+			cst_id,
+			cst_key,
+			cst_firstname,
+			cst_lastname,
+			cst_marital_status,
+			cst_gndr,
+			cst_create_date
 		)
 		SELECT 
 			cst_id,
@@ -78,15 +79,16 @@ BEGIN
 
 		PRINT '>>Inserting into Table: silver.crm_prd_info';
 
-		INSERT INTO silver.crm_prd_info (
-		prd_id,
-		cat_id,
-		prd_key,
-		prd_nm,
-		prd_cost,
-		prd_line,
-		prd_start_dt,
-		prd_end_dt
+		INSERT INTO silver.crm_prd_info 
+		(
+			prd_id,
+			cat_id,
+			prd_key,
+			prd_nm,
+			prd_cost,
+			prd_line,
+			prd_start_dt,
+			prd_end_dt
 		)
 		SELECT
 			prd_id,
@@ -117,15 +119,15 @@ BEGIN
 		PRINT '>> Inserting into table silver.crm_sales_details';
 		INSERT INTO silver.crm_sales_details
 		(
-		sls_ord_num,
-		sls_prd_key,
-		sls_cust_id,
-		sls_order_dt,
-		sls_ship_dt,
-		sls_due_dt,
-		sls_sales,
-		sls_quantity,
-		sls_price
+			sls_ord_num,
+			sls_prd_key,
+			sls_cust_id,
+			sls_order_dt,
+			sls_ship_dt,
+			sls_due_dt,
+			sls_sales,
+			sls_quantity,
+			sls_price
 		)
 		SELECT
 			sls_ord_num,
@@ -163,30 +165,75 @@ BEGIN
 		TRUNCATE TABLE silver.erp_cust_az12;
 
 		PRINT '>> Inserting Into Tble: silver.erp_cust_az12';
-		INSERT INTO silver.erp_cust_az12(
-		CID,
-		BDATE,
-		GEN
+		INSERT INTO silver.erp_cust_az12
+		(
+			cid,
+			bdate,
+			gen
 		)
 		SELECT
 			CASE WHEN CID LIKE 'NAS%' THEN SUBSTRING (CID, 4, LEN(CID)) 
 				ELSE CID
-			END AS CID,
+			END AS cid,
 			CASE WHEN BDATE >= GETDATE() THEN NULL
-				ELSE BDATE
+				ELSE bdate
 			END AS BDATE,
 			CASE WHEN UPPER (TRIM (GEN)) IN ('F', 'FEMALE') THEN 'Female'
 				WHEN UPPER (TRIM (GEN)) IN ('M', 'MALE') THEN 'Male'
 				ELSE 'Others'
-			END AS GEN
+			END AS gen
 		FROM bronze.erp_cust_az12
 
 		SET @end_time = GETDATE();
 		PRINT '>> Load Duration: ' +CAST(DATEDIFF(SECOND, @start_time, @end_time) AS NVARCHAR) + ' seconds';
 		PRINT '------------';
 
+		SET @start_time = GETDATE();
+		PRINT '>> Truncating Table: silver.erp_loc_a101';
+		TRUNCATE TABLE silver.erp_loc_a101;
+		PRINT 'Inserting into Table: silver.erp_loc_a101';
+		INSERT INTO silver.erp_loc_a101
+		(
+			cid,
+			cntry
+		)
+		SELECT
+			REPLACE (cid, '-', '') AS cid,
+			CASE WHEN UPPER(TRIM(cntry)) like 'DE' THEN 'Germany'
+				WHEN TRIM (cntry) IN ('US', 'USA') THEN 'United States'
+				WHEN TRIM (cntry) = '' OR cntry IS NULL THEN 'NA'
+				ELSE cntry
+			END AS cntry
+		FROM bronze.erp_loc_a101;
+		
+		SET @end_time = GETDATE();
+		PRINT '>> Load Duration: '+CAST (DATEDIFF(SECOND, @start_time, @end_time) AS NVARCHAR) + ' seconds'; 
+		PRINT '------------';
+		
+		SET @start_time=GETDATE();
+		PRINT '>> Truncating Table: silver.erp_px_cat_g1v2';
+		TRUNCATE TABLE silver.erp_px_cat_g1v2;
+		PRINT '>> Inserting Into Table: silver.erp_px_cat_g1v2';
+		INSERT INTO silver.erp_px_cat_g1v2(
+			id,
+			cat,
+			subcat,
+			maintenance
+		)
+		SELECT 
+			id,
+			cat,
+			subcat,
+			maintenance
+		FROM bronze.erp_px_cat_g1v2
+
+		SET @end_time=GETDATE();
+
+		PRINT '>> Load Duration: '+CAST(DATEDIFF(SECOND, @start_time, @end_time) AS NVARCHAR) + ' seconds';
+		PRINT '------------';
+
 		SET @batch_end_time = GETDATE();
-		PRINT '>> Total Load Duration:' + CAST(DATEDIFF(SECOND, @batch_start_time, @batch_end_time) AS NVARCHAR) + ' seconds';
+		PRINT '>> Total Load Duration: ' + CAST(DATEDIFF(SECOND, @batch_start_time, @batch_end_time) AS NVARCHAR) + ' seconds';
 		PRINT '------------';
 	END TRY
 	BEGIN CATCH
